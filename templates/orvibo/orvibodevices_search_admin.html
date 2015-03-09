@@ -1,0 +1,95 @@
+<div>
+ Module status:
+ [#if API_ENABLE="1"#]
+ <span style="color:green">ENABLED</span>
+ [#else API_ENABLE#]
+ <span style="color:red">DISABLED</span>
+ [#endif#]
+ [ <a href="#" onClick="$('#api_settings').toggle();return false;"><#LANG_SETUP#></a> ]
+ [#if ERROR!=""#]<div><font color="red">[#ERROR#]</font></div>[#endif#]
+</div>
+<div style="display:none" id='api_settings'>
+&nbsp;
+<form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
+<fieldset>
+<div class="form-group">
+ <label class="control-label"[#if ERR_API_URL#] style="color:red;font-weight:bold"[#endif#]>
+ API Host (local IP address):
+ (*)
+ </label>
+ <div class="controls"><input type="text" name="api_url" value="<#API_URL#>" class="input"></div>
+</div>
+
+<div class="form-group">
+ <label class="control-label"[#if ERR_API_PORT#] style="color:red;font-weight:bold"[#endif#]>
+ API Enable:
+ (*)
+ </label>
+ <div class="controls">
+ <input type="checkbox" name="api_enable" value="1"[#if API_ENABLE="1"#] checked[#endif#]>
+ </div>
+</div>
+
+<div class="form-actions">
+<button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_UPDATE#></button>
+<input type="hidden" name="view_mode" value="update_settings">
+<input type="hidden" name="mode" value="update">
+</div>
+</fieldset>
+</form>
+</div>
+
+
+</div>
+
+
+<!-- table orvibodevices search -->
+<table width=100% border=0><tr>
+<td valign=top>
+<!-- results -->
+[#if RESULT#]
+<!-- search results (list) -->
+<form action="?" method="post" name="frmList_orvibodevices" style="padding:0px" class="form">
+<table  align=center class="table table-striped">
+<thead>
+<tr>
+ <th>
+ <a href="?sortby_orvibodevices=TITLE&save_qry=1"><#LANG_TITLE#></a><nobr>
+ [#if SORTBY="TITLE"#](+)[#endif#]
+ [#if SORTBY="TITLE DESC"#](-)[#endif#]</nobr>
+ </th>
+<td>&nbsp;</td>
+</tr>
+</thead>
+<tbody>
+[#begin RESULT#]
+<tr style="height:52px" class="hover_btn2">
+ <td style="vertical-align:middle"
+  >
+  <b>
+   [#TITLE#]
+  </a></b>
+ </td>
+ <td style="vertical-align:middle" width="1%" nowrap>
+  <div style="width:120px">
+  [#if "<#ACTION#>"=="admin"#]
+   <a href="?view_mode=edit_orvibodevices&id=[#ID#]" class="btn btn-default" title="Edit"><i class="glyphicon glyphicon-pencil"></i></a>
+    <a href="?view_mode=delete_orvibodevices&id=[#ID#]" onClick="return confirm('Are you sure?')" class="btn btn-default" title="Delete"><i class="glyphicon glyphicon-remove"></i></a>
+  [#endif ACTION#]
+  </div>
+ </td>
+</tr>
+[#end RESULT#]
+</tbody>
+</table>
+<input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
+<input type="hidden" name="view_mode" value="multiple_orvibodevices">
+</form>
+<!-- / search results (list) -->
+[#else RESULT#]
+<p>
+<font color="red">No records found.</font>
+</p>
+[#endif RESULT#]
+<!-- / results -->
+</td></tr></table>

@@ -1,0 +1,17 @@
+
+ <!-- action usual -->
+ <!-- table orvibodevices search -->
+ [#if VIEW_MODE="search_orvibodevices" || VIEW_MODE=""#]
+  [#inc orvibodevices_search_admin.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table orvibodevices search -->
+ <!-- table orvibodevices edit -->
+ [#if VIEW_MODE="edit_orvibodevices"#]
+   [#inc orvibodevices_edit.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table orvibodevices edit -->
+ <!-- table orvibodevices view --> 
+ [#if VIEW_MODE="view_orvibodevices"#]
+   [#inc orvibodevices_view.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table orvibodevices view -->
