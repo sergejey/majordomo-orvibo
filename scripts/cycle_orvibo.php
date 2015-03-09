@@ -22,12 +22,11 @@ include_once(DIR_MODULES.'orvibo/orvibo.class.php');
 $orvibo = new orvibo();
 
 $orvibo->getConfig();
-/*
 if (!$orvibo->config['API_ENABLE']) {
  $db->Disconnect();
  exit;
 }
-*/
+
 
 $orvibo->ip=$orvibo->config['API_URL'];
 $orvibo->port=10000;
