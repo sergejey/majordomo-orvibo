@@ -36,13 +36,131 @@
  </label>
  <div class="col-lg-4">[#IP#]</div>
 </div>
+
+<script language="javascript">
+ var learningTime=0;
+ var learnTimer;
+
+ function updateIRTimeout() {
+  clearTimeout(learnTimer);
+  $('#value_ir').html('Learning '+learningTime+' s');
+  learningTime-=1;
+  if (learningTime>0) {
+   learnTimer=setTimeout('updateIRTimeout();', 1000);
+  } else {
+   window.location.reload();
+  }
+  return false;
+ }
+
+ function switchSocket() {
+  var url="?";
+  url+="ajax=1&op=switch&view_mode=<#VIEW_MODE#>&edit_mode=<#EDIT_MODE#>&id=[#ID#]";
+ $.ajax({
+   url: url
+  }).done(function(data) { 
+   learningTime=10;
+   $('#switch_status').html(data);
+  });
+  return false;
+ }
+
+ function updateRFTimeout() {
+  clearTimeout(learnTimer);
+  $('#value_rf').html('Learning '+learningTime+' s');
+  learningTime-=1;
+  if (learningTime>0) {
+   learnTimer=setTimeout('updateRFTimeout();', 1000);
+  } else {
+   window.location.reload();
+  }
+  return false;
+ }
+
+ function learnIR() {
+  if (learningTime>0) {
+   window.location.reload();
+  }
+  var url="?";
+  url+="ajax=1&op=learnir&view_mode=<#VIEW_MODE#>&edit_mode=<#EDIT_MODE#>&id=[#ID#]";
+ $.ajax({
+   url: url
+  }).done(function(data) { 
+   learningTime=10;
+   $('#learnir_button').html(data);
+   updateIRTimeout();
+  });
+  return false;
+ }
+
+ function sendIR() {
+  var url="?";
+  url+="ajax=1&op=sendir&view_mode=<#VIEW_MODE#>&edit_mode=<#EDIT_MODE#>&id=[#ID#]";
+ $.ajax({
+   url: url
+  }).done(function(data) { 
+   $('#sendir_button').html(data);
+  });
+  return false;
+ }
+
+ function learnRF() {
+  if (learningTime>0) {
+   window.location.reload();
+  }
+  var url="?";
+  url+="ajax=1&op=learnrf&view_mode=<#VIEW_MODE#>&edit_mode=<#EDIT_MODE#>&id=[#ID#]";
+ $.ajax({
+   url: url
+  }).done(function(data) { 
+   learningTime=10;
+   $('#learnrf_button').html(data);
+   updateRFTimeout();
+  });
+  return false;
+ }
+
+
+</script>
+
+
+[#if TYPE="1"#]
+
+
+<div class="form-group">
+ <label class="col-lg-3 control-label">
+ Value IR:
+ </label>
+ <div class="col-lg-4">
+ <span id='value_ir'>[#VALUE_IR#]</span> 
+ <a href="#" class="btn btn-default" id='learnir_button' onClick="return learnIR();">Learn IR</a>
+ [#if VALUE_IR!=""#]
+ <a href="#" class="btn btn-default" id='sendir_button' onClick="return sendIR();">Test IR</a>
+ [#endif#]
+ </div>
+</div>
+
+<!-- STATUS (int) -->
+<div class="form-group">
+ <label class="col-lg-3 control-label">
+ Value RF:
+ </label>
+ <div class="col-lg-4"><span id='value_rf'>[#VALUE_RF#]</span> <a href="#" class="btn btn-default" id='learnrf_button' onClick="return learnRF();">Learn RF</a></div>
+</div>
+
+
+
+[#else TYPE#]
 <!-- STATUS (int) -->
 <div class="form-group">
  <label class="col-lg-3 control-label"[#if ERR_STATUS#] style="color:red;font-weight:bold"[#endif#]>
  Value:
  </label>
- <div class="col-lg-4">[#STATUS#]</div>
+ <div class="col-lg-4"><span id="switch_status">[#STATUS#]</span>
+ <a href="#" class="btn btn-default" id='switch_button' onClick="return switchSocket();">Switch</a>
+ </div>
 </div>
+[#endif TYPE#]
 
 <!-- UPDATED (datetime) -->
 <div class="form-group">
@@ -58,26 +176,59 @@
 <!-- LINKED_OBJECT (varchar) -->
 <div class="form-group">
  <label class="col-lg-3 control-label"[#if ERR_LINKED_OBJECT#] style="color:red;font-weight:bold"[#endif#]>
- <#LANG_LINKED_OBJECT#>:
+ <#LANG_LINKED_OBJECT#> [#if TYPE="1"#](IR)[#endif#]:
  </label>
  <div class="col-lg-4"><input type="text" class="form-control" name="linked_object" id='linked_object' value="[#LINKED_OBJECT#]" ></div>
 </div>
 <!-- LINKED_PROPERTY (varchar) -->
 <div class="form-group">
  <label class="col-lg-3 control-label"[#if ERR_LINKED_PROPERTY#] style="color:red;font-weight:bold"[#endif#]>
- <#LANG_LINKED_PROPERTY#>:
+ <#LANG_LINKED_PROPERTY#> [#if TYPE="1"#](IR)[#endif#]:
  </label>
  <div class="col-lg-4"><input type="text" class="form-control" name="linked_property" id='linked_property' value="[#LINKED_PROPERTY#]" ></div>
 </div>
 <!-- LINKED_METHOD (varchar) -->
 <div class="form-group">
  <label class="col-lg-3 control-label"[#if ERR_LINKED_METHOD#] style="color:red;font-weight:bold"[#endif#]>
- <#LANG_METHOD#>:
+ <#LANG_METHOD#> [#if TYPE="1"#](IR)[#endif#]:
  </label>
  <div class="col-lg-4"><input type="text" class="form-control" name="linked_method" id='linked_method' value="[#LINKED_METHOD#]" ></div>
 </div>
-
 [#module name="linkedobject" object_field="linked_object" property_field="linked_property" method_field="linked_method"#]
+
+[#if TYPE="1"#]
+<!-- LINKED_OBJECT (varchar) -->
+<div class="form-group">
+ <label class="col-lg-3 control-label"[#if ERR_LINKED_OBJECT_RF#] style="color:red;font-weight:bold"[#endif#]>
+ <#LANG_LINKED_OBJECT#> (RF):
+ </label>
+ <div class="col-lg-4"><input type="text" class="form-control" name="linked_object_rf" id='linked_object_rf' value="[#LINKED_OBJECT_RF#]" ></div>
+</div>
+<!-- LINKED_PROPERTY (varchar) -->
+<div class="form-group">
+ <label class="col-lg-3 control-label"[#if ERR_LINKED_PROPERTY_RF#] style="color:red;font-weight:bold"[#endif#]>
+ <#LANG_LINKED_PROPERTY#> (RF):
+ </label>
+ <div class="col-lg-4"><input type="text" class="form-control" name="linked_property_rf" id='linked_property_rf' value="[#LINKED_PROPERTY_RF#]" ></div>
+</div>
+<!-- LINKED_METHOD (varchar) -->
+<div class="form-group">
+ <label class="col-lg-3 control-label"[#if ERR_LINKED_METHOD_RF#] style="color:red;font-weight:bold"[#endif#]>
+ <#LANG_METHOD#> (RF):
+ </label>
+ <div class="col-lg-4"><input type="text" class="form-control" name="linked_method_rf" id='linked_method_rf' value="[#LINKED_METHOD_RF#]" ></div>
+</div>
+
+<div class="form-group">
+ <label class="col-lg-3 control-label"[#if ERR_LINKED_METHOD_RF#] style="color:red;font-weight:bold"[#endif#]>
+ <#LANG_METHOD#> (Button pressed):
+ </label>
+ <div class="col-lg-4"><input type="text" class="form-control" name="linked_method_button" id='linked_method_button' value="[#LINKED_METHOD_BUTTON#]" ></div>
+</div>
+
+[#module name="linkedobject" object_field="linked_object_rf" property_field="linked_property_rf" method_field="linked_method_rf"#]
+
+[#endif TYPE#]
 
 <div class="form-group">
         <div class="col-lg-offset-3 col-lg-4">

@@ -7,6 +7,42 @@
   }
   $table_name='orvibodevices';
   $rec=SQLSelectOne("SELECT * FROM $table_name WHERE ID='$id'");
+
+  global $ajax;
+  if ($ajax) {
+   global $op;
+   if ($op=='learnir') {
+    $this->setIRLearning($rec['ID']);
+    echo "IR ";
+   }
+   if ($op=='sendir') {
+    $this->sendIR($rec['ID'], $rec['VALUE_IR']);
+    echo "Test ";
+   }
+   if ($op=='learnrf') {
+    $this->setRFLearning($rec['ID']);
+    echo "RF ";
+   }
+
+   if ($op=='switch') {
+    if ($rec['STATUS']) {
+     $this->setStatus($rec['ID'], 0);
+    } else {
+     $this->setStatus($rec['ID'], 1);
+    }
+    $new_status=current(SQLSelectOne("SELECT STATUS FROM orvibodevices WHERE ID='".$rec['ID']."'"));
+    echo "$new_status ";
+   }
+
+
+   if ($op=='sendir') {
+    $this->sendRF($rec['ID'], $rec['VALUE_RF']);
+    echo "Test ";
+   }
+   echo "OK";
+   exit;
+  }
+
   if ($this->mode=='update') {
    $ok=1;
   //updating 'TITLE' (varchar, required)
@@ -25,6 +61,21 @@
   //updating 'LINKED_METHOD' (varchar)
    global $linked_method;
    $rec['LINKED_METHOD']=$linked_method;
+
+   global $linked_object_rf;
+   $rec['LINKED_OBJECT_RF']=$linked_object_rf;
+  //updating 'LINKED_PROPERTY' (varchar)
+   global $linked_property_rf;
+   $rec['LINKED_PROPERTY_RF']=$linked_property_rf;
+  //updating 'LINKED_METHOD' (varchar)
+   global $linked_method_rf;
+   $rec['LINKED_METHOD_RF']=$linked_method_rf;
+
+   global $linked_method_button;
+   $rec['LINKED_METHOD_BUTTON']=$linked_method_button;
+
+
+
   //UPDATING RECORD
    if ($ok) {
     if ($rec['ID']) {
@@ -46,6 +97,10 @@
    }
   }
   outHash($rec, $out);
+
+  if ($rec['VALUE_IR']) {
+   $out['VALUE_IR']=chunk_split($rec['VALUE_IR'],8," ");
+  }
 
  if ($rec['LINKED_OBJECT'] && $rec['LINKED_PROPERTY']) {
   addLinkedProperty($rec['LINKED_OBJECT'], $rec['LINKED_PROPERTY'], $this->name);
