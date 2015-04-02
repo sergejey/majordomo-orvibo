@@ -57,7 +57,7 @@ socket_set_option($sock, SOL_SOCKET, SO_BROADCAST, 1);
 $discover=1;
  
 
-
+$latest_config_read=time();
 $subscribed=array();
 
 //Do some communication, this loop can handle multiple clients
@@ -65,16 +65,37 @@ while(1)
 {
 
     setGlobal((str_replace('.php', '', basename(__FILE__))).'Run', time(), 1);
+
+    if ((time()-$latest_config_read)>10) {
+     $latest_config_read=time();
+     $orvibo->getConfig();
+     if ($orvibo->config['NEED_DISCOVER']) {
+      echo date('H:i:s')." Need discover flag set ... \n";
+      $discover=1;
+      $orvibo->config['NEED_DISCOVER']=0;
+      $orvibo->saveConfig();
+     }
+    }
+
+    if ((time()-$latest_discover)>5*60) {
+     echo date('H:i:s')." Discover timeout, rediscovering ... \n";
+     $discover=1;
+    }
+
     if ($discover) {
+     echo date('H:i:s')." Discovering ... \n";
      $orvibo->discover($sock);
+     $latest_discover=time();
      $discover=0;
     }
 
     echo date('H:i:s')." Waiting for data ... \n";
      
     //Receive some data
-    $r = socket_recvfrom($sock, $buf, 512, 0, $remote_ip, $remote_port);
-    if ($remote_ip!=$orvibo->ip) {
+    socket_set_option($sock,SOL_SOCKET,SO_RCVTIMEO,array("sec"=>10,"usec"=>0));
+    $buf='';
+    @$r = socket_recvfrom($sock, $buf, 512, 0, $remote_ip, $remote_port);
+    if ($remote_ip!=$orvibo->ip && $buf!='') {
      $orvibo->processMessage($buf, $remote_ip, $sock);
     }
 

@@ -129,6 +129,11 @@ function admin(&$out) {
  }
  $out['API_ENABLE']=(int)$this->config['API_ENABLE'];
 
+ if ($this->view_mode=='discover') {
+  $this->sendDiscover();
+  $this->redirect("?");
+ }
+
  if ($this->view_mode=='update_settings') {
    global $api_url;
    global $api_enable;
@@ -231,8 +236,11 @@ function sendIR($id, $code) {
  $this->getConfig();
  $this->port=10000;
 
+ //$rec['MAC']='ACCF232A5FFA';
+
  $code=trim(str_replace(' ', '', $code));
  $len1=(int)(strlen($code)/2)+26;
+
  $high_byte=floor($len1/256);
  $low_byte=$len1-$high_byte*256;
  $h1=dechex($high_byte);
@@ -244,9 +252,11 @@ function sendIR($id, $code) {
   $l1='0'.$l1;
  }
  $packetlen=$h1.$l1;
- $len2=strlen($code);
+
+ $len2=strlen($code)/2;
+
  $high_byte=floor($len2/256);
- $low_byte=$len1-$high_byte*256;
+ $low_byte=$len2-$high_byte*256;
  $h2=dechex($high_byte);
  $l2=dechex($low_byte);
  if (strlen($h2)<2) {
@@ -255,11 +265,16 @@ function sendIR($id, $code) {
  if (strlen($l2)<2) {
   $l2='0'.$l2;
  }
+
+
  $irlen=array_reverse($this->HexStringToArray($h2.$l2));
  $randomBitA = rand(0, 255);
  $randomBitB = rand(0, 255);
  $twenties=array(0x20, 0x20, 0x20, 0x20, 0x20, 0x20);
  $this->port=10000;   
+
+
+
  $rec=SQLSelectOne("SELECT * FROM orvibodevices WHERE ID='".$id."'");
  if ($rec['ID']) {
   if(!($sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP)))
@@ -269,17 +284,19 @@ function sendIR($id, $code) {
      die("Couldn't create socket: [$errorcode] $errormsg \n");
   }
 
-  $payload = $this->makePayload(array(0x68, 0x64)).
-             $this->makePayload($this->HexStringToArray($packetlen)).
-             $this->makePayload(array(0x69, 0x63)).
-             $this->makePayload($this->HexStringToArray($rec['MAC'])).
-             $this->makePayload($twenties).
-             $this->makePayload(array(0x65, 0x00, 0x00, 0x00)).
-             $this->makePayload(array(0x00, $randomBitA, 0x00, $randomBitB)).
-             $this->makePayload($irlen)
-             ;
+  $payload = $this->makePayload(array(0x68, 0x64));
+  $payload .= $this->makePayload($this->HexStringToArray($packetlen));
+  $payload .= $this->makePayload(array(0x69, 0x63));
+  $payload .= $this->makePayload($this->HexStringToArray($rec['MAC']));
+  $payload .= $this->makePayload($twenties);
+  $payload .= $this->makePayload(array(0x65, 0x00, 0x00, 0x00));
+  $payload .= $this->makePayload(array($randomBitA, $randomBitB));
+  $payload .= $this->makePayload($irlen);
 
   $payload.=$this->makePayload($this->HexStringToArray($code));
+
+  //echo "Sending IR (".$rec['IP'].":".$this->port."): ".chunk_split($this->binaryToString($payload),2," ")."\n";
+
 
   socket_sendto($sock, $payload, strlen($payload), 0, $rec['IP'], $this->port); 
   socket_close($sock);
@@ -418,6 +435,22 @@ function setRFLearning($id) {
 
  }
 
+
+/**
+* Title
+*
+* Description
+*
+* @access public
+*/
+ function sendDiscover() {
+
+ $this->getConfig();
+ $this->config['NEED_DISCOVER']=1;
+ $this->saveConfig();
+
+}
+
 /**
 * Title
 *
@@ -468,7 +501,14 @@ function setRFLearning($id) {
        }
       } elseif (is_integer(strpos($message, '534f433030'))) { //socket
        $rec['TYPE']=0;
-       $rec['TITLE']='Socket - '.$macAddress;
+       if (!$rec['TITLE']) {
+        $rec['TITLE']='Socket - '.$macAddress;
+       }
+      } else {
+       $rec['TYPE']=1;
+       if (!$rec['TITLE']) {
+        $rec['TITLE']='Unknown - '.$macAddress;
+       }
       }
       $rec['MAC']=$macAddress;
       $rec['IP']=$remote_ip;
@@ -480,12 +520,12 @@ function setRFLearning($id) {
       }
 
       //subscribe to it
-      if (!$this->subscribed[$rec['MAC']]) {
+      if (!$this->subscribed[$rec['MAC']] || ((time()-$this->subscribed[$rec['MAC']])>30)) {
        $macReversed=array_reverse($this->HexStringToArray($rec['MAC']));
        $payload = $this->makePayload(array(0x68, 0x64, 0x00, 0x1e, 0x63, 0x6c)).$this->makePayload($this->HexStringToArray($rec['MAC'])).$this->makePayload($twenties).$this->makePayload($macReversed).$this->makePayload($twenties);
        echo date('H:i:s')." Sending subscribe request: ".$this->binaryToString($payload)."\n";
        socket_sendto($sock, $payload, strlen($payload), 0, $rec['IP'], $this->port); 
-       $this->subscribed[$rec['MAC']]=1;
+       $this->subscribed[$rec['MAC']]=time();
        //query for name (optional)
        /*
        $payload = $this->makePayload(array(0x68, 0x64, 0x00, 0x1d, 0x72, 0x74));

@@ -6,6 +6,11 @@
  <span style="color:red">DISABLED</span>
  [#endif#]
  [ <a href="#" onClick="$('#api_settings').toggle();return false;"><#LANG_SETUP#></a> ]
+
+ [#if API_ENABLE="1"#]
+ [ <a href="?view_mode=discover">Discover</a> ]
+ [#endif#]
+
  [#if ERROR!=""#]<div><font color="red">[#ERROR#]</font></div>[#endif#]
 </div>
 <div style="display:none" id='api_settings'>
