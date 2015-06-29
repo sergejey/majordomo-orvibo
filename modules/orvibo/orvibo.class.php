@@ -520,7 +520,7 @@ function setRFLearning($id) {
       }
 
       //subscribe to it
-      if (!$this->subscribed[$rec['MAC']] || ((time()-$this->subscribed[$rec['MAC']])>30)) {
+      //if (!$this->subscribed[$rec['MAC']] || ((time()-$this->subscribed[$rec['MAC']])>30)) {
        $macReversed=array_reverse($this->HexStringToArray($rec['MAC']));
        $payload = $this->makePayload(array(0x68, 0x64, 0x00, 0x1e, 0x63, 0x6c)).$this->makePayload($this->HexStringToArray($rec['MAC'])).$this->makePayload($twenties).$this->makePayload($macReversed).$this->makePayload($twenties);
        echo date('H:i:s')." Sending subscribe request: ".$this->binaryToString($payload)."\n";
@@ -535,7 +535,7 @@ function setRFLearning($id) {
        echo date('H:i:s')." Sending name request: ".$this->binaryToString($payload)."\n";
        socket_sendto($sock, $payload, strlen($payload), 0, $rec['IP'], $this->port); 
        */
-      }
+      //}
 
 
      } elseif ($command=='7274') { // We've queried the socket for the name, and we've got data coming back
