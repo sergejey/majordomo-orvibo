@@ -99,7 +99,7 @@ while(1)
      $orvibo->processMessage($buf, $remote_ip, $sock);
     }
 
-   if (file_exists('./reboot') || $_GET['onetime']) 
+   if (file_exists('./reboot') || IsSet($_GET['onetime'])) 
    {
       $db->Disconnect();
       exit;
