@@ -225,7 +225,12 @@ function propertySetHandle($object, $property, $value) {
    $total=count($devices);
    if ($total) {
     for($i=0;$i<$total;$i++) {
-     $this->sendRF($devices[$i]['ID'], $value);
+     $tmp=explode(' ', $value);
+     if (isset($tmp[1])) {
+      $this->sendRF($devices[$i]['ID'], $tmp[], (int)$tmp[1]);
+     } else {
+      $this->sendRF($devices[$i]['ID'], $value);
+     }
     }
    }
 
@@ -306,11 +311,66 @@ function sendIR($id, $code) {
 }
 
 
-function sendRF($id, $code) {
+function sendRF($id, $code, $rfState=0x01) {
 
  //TO-DO
 
- return;
+ $this->getConfig();
+ $this->port=10000;
+
+ //$rec['MAC']='ACCF232A5FFA';
+
+ $code=trim(str_replace(' ', '', $code));
+ $len1=(int)(strlen($code)/2)+25;
+
+ $high_byte=floor($len1/256);
+ $low_byte=$len1-$high_byte*256;
+ $h1=dechex($high_byte);
+ $l1=dechex($low_byte);
+ if (strlen($h1)<2) {
+  $h1='0'.$h1;
+ }
+ if (strlen($l1)<2) {
+  $l1='0'.$l1;
+ }
+ $packetlen=$h1.$l1;
+
+
+ $randomBitA = rand(0, 255);
+ $randomBitB = rand(0, 255);
+ $twenties=array(0x20, 0x20, 0x20, 0x20, 0x20, 0x20);
+ $this->port=10000;   
+
+
+
+ $rec=SQLSelectOne("SELECT * FROM orvibodevices WHERE ID='".$id."'");
+ if ($rec['ID']) {
+  if(!($sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP)))
+  {
+     $errorcode = socket_last_error();
+     $errormsg = socket_strerror($errorcode);
+     die("Couldn't create socket: [$errorcode] $errormsg \n");
+  }
+
+  $payload = $this->makePayload(array(0x68, 0x64));
+  $payload .= $this->makePayload($this->HexStringToArray($packetlen));
+  $payload .= $this->makePayload(array(0x64, 0x63));
+  $payload .= $this->makePayload($this->HexStringToArray($rec['MAC']));
+  $payload .= $this->makePayload($twenties);
+  $payload .= $this->makePayload(array(0x3e, 0xf5, 0xee, 0x0b));
+  $payload .= $this->makePayload(array($randomBitA, $randomBitB));
+  $payload .= $this->makePayload(array($rfState));
+  $payload.=$this->makePayload($this->HexStringToArray($code));
+
+  //echo "Sending RF (".$rec['IP'].":".$this->port."): ".chunk_split($this->binaryToString($payload),2," ")."\n";
+
+
+  socket_sendto($sock, $payload, strlen($payload), 0, $rec['IP'], $this->port); 
+  socket_close($sock);
+  $rec['UPDATED']=date('Y-m-d H:i:s');
+  SQLUpdate('orvibodevices', $rec);
+ }  
+
   
 }
 
@@ -394,7 +454,7 @@ function setRFLearning($id) {
      die("Couldn't create socket: [$errorcode] $errormsg \n");
   }
 
-  $payload = $this->makePayload(array(0x68, 0x64, 0x00, 0x18, 0x64, 0x63)).
+  $payload = $this->makePayload(array(0x68, 0x64, 0x00, 0x18, 0x72, 0x66)).
              $this->makePayload($this->HexStringToArray($rec['MAC'])).
              $this->makePayload($twenties).
              $this->makePayload(array(0x01, 0x00, 0x00, 0x00, 0x00, 0x00));
