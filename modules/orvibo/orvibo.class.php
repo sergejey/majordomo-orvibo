@@ -459,7 +459,7 @@ function setRFLearning($id) {
              $this->makePayload($twenties).
              $this->makePayload(array(0x01, 0x00, 0x00, 0x00, 0x00, 0x00));
 
-  echo "Sorry, not working yet...";
+  //echo "Sorry, not working yet...";
 
   socket_sendto($sock, $payload, strlen($payload), 0, $rec['IP'], $this->port); 
   socket_close($sock);
