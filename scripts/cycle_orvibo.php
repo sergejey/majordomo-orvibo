@@ -77,7 +77,7 @@ while(1)
      }
     }
 
-    if ((time()-$latest_discover)>5*60) {
+    if ((time()-$latest_discover)>10) {
      echo date('H:i:s')." Discover timeout, rediscovering ... \n";
      $discover=1;
     }
