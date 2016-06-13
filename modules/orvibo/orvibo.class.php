@@ -732,8 +732,8 @@ orvibodevices - Devices
  orvibodevices: IP char(50) NOT NULL DEFAULT ''
  orvibodevices: STATUS int(3) NOT NULL DEFAULT '0'
 
- orvibodevices: VALUE_IR text NOT NULL DEFAULT ''
- orvibodevices: VALUE_RF text NOT NULL DEFAULT ''
+ orvibodevices: VALUE_IR text
+ orvibodevices: VALUE_RF text
 
  orvibodevices: LINKED_OBJECT varchar(255) NOT NULL DEFAULT ''
  orvibodevices: LINKED_PROPERTY varchar(255) NOT NULL DEFAULT ''
