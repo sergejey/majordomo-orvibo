@@ -720,7 +720,7 @@ function setRFLearning($id) {
 *
 * @access private
 */
- function dbInstall() {
+ function dbInstall($data) {
 /*
 orvibodevices - Devices
 */
