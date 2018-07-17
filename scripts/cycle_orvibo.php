@@ -70,7 +70,7 @@ while(1)
      $latest_config_read=time();
      $orvibo->getConfig();
      if ($orvibo->config['NEED_DISCOVER']) {
-      echo date('H:i:s')." Need discover flag set ... \n";
+      //echo date('H:i:s')." Need discover flag set ... \n";
       $discover=1;
       $orvibo->config['NEED_DISCOVER']=0;
       $orvibo->saveConfig();
@@ -78,18 +78,18 @@ while(1)
     }
 
     if ((time()-$latest_discover)>10) {
-     echo date('H:i:s')." Discover timeout, rediscovering ... \n";
+     //echo date('H:i:s')." Discover timeout, rediscovering ... \n";
      $discover=1;
     }
 
     if ($discover) {
-     echo date('H:i:s')." Discovering ... \n";
+     //echo date('H:i:s')." Discovering ... \n";
      $orvibo->discover($sock);
      $latest_discover=time();
      $discover=0;
     }
 
-    echo date('H:i:s')." Waiting for data ... \n";
+    //echo date('H:i:s')." Waiting for data ... \n";
      
     //Receive some data
     socket_set_option($sock,SOL_SOCKET,SO_RCVTIMEO,array("sec"=>10,"usec"=>0));

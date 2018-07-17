@@ -533,7 +533,7 @@ function setRFLearning($id) {
 */
  function processMessage($buf, $remote_ip, $sock) {
 
-     echo date('H:i:s')." $remote_ip : " . $this->binaryToString($buf)."\n";
+     //echo date('H:i:s')." $remote_ip : " . $this->binaryToString($buf)."\n";
      $twenties=array(0x20, 0x20, 0x20, 0x20, 0x20, 0x20);
 
      $message=$this->binaryToString($buf);
@@ -545,15 +545,15 @@ function setRFLearning($id) {
       return;
      }
 
-     echo date('H:i:s')." MAC: ".$macAddress."\n";
+     //echo date('H:i:s')." MAC: ".$macAddress."\n";
      $command=substr($message, 8,4);
      $rec=SQLSelectOne("SELECT * FROM orvibodevices WHERE MAC LIKE '".DBSafe($macAddress)."'");
      if (!$rec['ID'] && $command!='7161') {
-      echo date('H:i:s')." Unknown device.";
+      //echo date('H:i:s')." Unknown device.";
       return;
      }
      if ($command=='7161') { // We've asked for all sockets on the network, and smoeone has replied!
-      echo date('H:i:s')." Discover reply from $macAddress\n";
+      //echo date('H:i:s')." Discover reply from $macAddress\n";
       if (is_integer(strpos($message, '4952443030'))) { //from a known AllOne (because IR00 appears in the packet)
        $rec['TYPE']=1;
        if (!$rec['TITLE']) {
@@ -583,7 +583,7 @@ function setRFLearning($id) {
       //if (!$this->subscribed[$rec['MAC']] || ((time()-$this->subscribed[$rec['MAC']])>30)) {
        $macReversed=array_reverse($this->HexStringToArray($rec['MAC']));
        $payload = $this->makePayload(array(0x68, 0x64, 0x00, 0x1e, 0x63, 0x6c)).$this->makePayload($this->HexStringToArray($rec['MAC'])).$this->makePayload($twenties).$this->makePayload($macReversed).$this->makePayload($twenties);
-       echo date('H:i:s')." Sending subscribe request: ".$this->binaryToString($payload)."\n";
+       //echo date('H:i:s')." Sending subscribe request: ".$this->binaryToString($payload)."\n";
        socket_sendto($sock, $payload, strlen($payload), 0, $rec['IP'], $this->port); 
        $this->subscribed[$rec['MAC']]=time();
        //query for name (optional)
@@ -599,7 +599,7 @@ function setRFLearning($id) {
 
 
      } elseif ($command=='7274') { // We've queried the socket for the name, and we've got data coming back
-       echo date('H:i:s')." Name reply from $macAddress\n";
+       //echo date('H:i:s')." Name reply from $macAddress\n";
        $tmp=explode('202020202020', $message);
        $strName=$tmp[4];
        if(strName == "ffffffffffffffffffffffffffffffff") {
@@ -616,29 +616,29 @@ function setRFLearning($id) {
        }
 
      } elseif ($command=='636c') { // We've asked to subscribe to an AllOne, and this is confirmation.
-       echo date('H:i:s')." Subscription reply from $macAddress\n";
+       //echo date('H:i:s')." Subscription reply from $macAddress\n";
      } elseif ($command=='6463') { // We've asked to change our state, and it's happened
-       echo date('H:i:s')." State change reply from $macAddress\n";
+       //echo date('H:i:s')." State change reply from $macAddress\n";
      } elseif ($command=='6469') { // Possible button press, or just a ping thing?
-       echo date('H:i:s')." Button pressed from $macAddress\n";
+       //echo date('H:i:s')." Button pressed from $macAddress\n";
         if ($rec['LINKED_OBJECT'] && $rec['LINKED_METHOD_BUTTON']) {
           $params=array();
           $params['VALUE']=$rec['VALUE_IR'];
           callMethod($rec['LINKED_OBJECT'].'.'.$rec['LINKED_METHOD_BUTTON'], $params);
         }
      } elseif ($command=='7366') { // Something has changed our socket state externally
-       echo date('H:i:s')." Socket state changed from $macAddress\n";
+       //echo date('H:i:s')." Socket state changed from $macAddress\n";
        if ($rec['TYPE']==0) {
         $state=substr($message, strlen($message)-1, 1);
         $this->statusChanged($rec['ID'], (int)$state);
        }
      } elseif ($command=='6963') { // We've asked to emit some IR and it's been done.
-       echo date('H:i:s')." Emit IR done from $macAddress\n";
+       //echo date('H:i:s')." Emit IR done from $macAddress\n";
      } elseif ($command=='6c73') { // We're in learning mode, and we've got some IR back!
-       echo date('H:i:s')." IR learning mode done from $macAddress\n";
+       //echo date('H:i:s')." IR learning mode done from $macAddress\n";
        if (substr($message, 4, 4)!='0018') {
         $code=substr($message, 52);
-        echo date('H:i:s')." Code: ".$code."\n";
+        //echo date('H:i:s')." Code: ".$code."\n";
         $rec['VALUE_IR']=$code;
         $rec['UPDATED']=date('Y-m-d H:i:s');
         SQLUpdate('orvibodevices', $rec);
@@ -655,10 +655,10 @@ function setRFLearning($id) {
 
 
        } else {
-        echo date('H:i:s')." Ignoring result\n";
+        //echo date('H:i:s')." Ignoring result\n";
        }
      } else {
-      echo date('H:i:s')." Unknown command: $command \n";
+      //echo date('H:i:s')." Unknown command: $command \n";
      }
 
   
@@ -720,7 +720,7 @@ function setRFLearning($id) {
 *
 * @access private
 */
- function dbInstall($data) {
+ function dbInstall() {
 /*
 orvibodevices - Devices
 */
