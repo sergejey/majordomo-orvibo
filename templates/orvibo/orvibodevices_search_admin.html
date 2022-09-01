@@ -1,4 +1,5 @@
-<div>
+<div class="row">
+ <div class="col-md-6">
  Module status:
  [#if API_ENABLE="1"#]
  <span style="color:green">ENABLED</span>
@@ -10,8 +11,11 @@
  [#if API_ENABLE="1"#]
  [ <a href="?view_mode=discover">Discover</a> ]
  [#endif#]
-
  [#if ERROR!=""#]<div><font color="red">[#ERROR#]</font></div>[#endif#]
+  </div>
+  <div class="col-md-6">
+   [#module name="xray" action="service" cycle="orvibo"#]
+   </div>
 </div>
 <div style="display:none" id='api_settings'>
 &nbsp;
@@ -35,6 +39,8 @@
  </div>
 </div>
 
+
+
 <div class="form-actions">
 <button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_UPDATE#></button>
 <input type="hidden" name="view_mode" value="update_settings">
@@ -48,33 +54,21 @@
 </div>
 
 
+
 <!-- table orvibodevices search -->
-<table width=100% border=0><tr>
-<td valign=top>
 <!-- results -->
 [#if RESULT#]
+&nbsp;
 <!-- search results (list) -->
 <form action="?" method="post" name="frmList_orvibodevices" style="padding:0px" class="form">
-<table  align=center class="table table-striped">
-<thead>
-<tr>
- <th>
- <a href="?sortby_orvibodevices=TITLE&save_qry=1"><#LANG_TITLE#></a><nobr>
- [#if SORTBY="TITLE"#](+)[#endif#]
- [#if SORTBY="TITLE DESC"#](-)[#endif#]</nobr>
- </th>
-<td>&nbsp;</td>
-</tr>
-</thead>
+<table class="table table-striped">
 <tbody>
 [#begin RESULT#]
-<tr style="height:52px" class="hover_btn2">
- <td style="vertical-align:middle"
-  >
-  <b>
-   [#TITLE#]
-  </a></b>
- </td>
+<tr>
+ <td><b>[#TITLE#]</b></td>
+ <td>[#MAC#]</td>
+ <td>[#IP#]</td>
+ <td>[#if IS_ONLINE="1"#]<font color="green">[#endif#][#UPDATED#]</td>
  <td style="vertical-align:middle" width="1%" nowrap>
   <div style="width:120px">
   [#if "<#ACTION#>"=="admin"#]
@@ -97,4 +91,4 @@
 </p>
 [#endif RESULT#]
 <!-- / results -->
-</td></tr></table>
+

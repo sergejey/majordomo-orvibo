@@ -171,6 +171,20 @@ function admin(&$out) {
 function usual(&$out) {
  $this->admin($out);
 }
+
+function api($params) {
+    $id = $_REQUEST['id'];
+    $dev=SQLSelectOne("SELECT * FROM orvibodevices WHERE ID=".(int)$id);
+    if ($dev['ID']) {
+        if ($_REQUEST['ir']) {
+            $this->sendIR($dev['ID'],$_REQUEST['ir']);
+        }
+        if ($_REQUEST['rf']) {
+            $this->sendRF($dev['ID'],$_REQUEST['rf']);
+        }
+    }
+}
+
 /**
 * orvibodevices search
 *
@@ -241,6 +255,7 @@ function sendIR($id, $code) {
  $this->getConfig();
  $this->port=10000;
 
+ DebMes("Sending IR: ".$code,'orvibo');
  //$rec['MAC']='ACCF232A5FFA';
 
  $code=trim(str_replace(' ', '', $code));
@@ -421,10 +436,13 @@ function setIRLearning($id) {
  $this->port=10000;   
  $rec=SQLSelectOne("SELECT * FROM orvibodevices WHERE ID='".$id."'");
  if ($rec['ID']) {
+     $rec['VALUE_IR']='';
+     SQLUpdate('orvibodevices',$rec);
   if(!($sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP)))
   {
      $errorcode = socket_last_error();
      $errormsg = socket_strerror($errorcode);
+     DebMes("Error setting IR learning mode",'orvibo');
      die("Couldn't create socket: [$errorcode] $errormsg \n");
   }
 
@@ -433,6 +451,8 @@ function setIRLearning($id) {
 
   socket_sendto($sock, $payload, strlen($payload), 0, $rec['IP'], $this->port); 
   socket_close($sock);
+
+     DebMes("IR learning mode asked",'orvibo');
 
  }
 }
@@ -519,6 +539,7 @@ function setRFLearning($id) {
 * @access public
 */
  function discover($sock) {
+     DebMes("Sending discovery packet",'orvibo');
      $payload = $this->makePayload(array(0x68, 0x64, 0x00, 0x06, 0x71, 0x61));
      echo date('H:i:s')." Sending multicast: ".$this->binaryToString($payload)."\n";
      socket_sendto($sock, $payload, strlen($payload), 0, '255.255.255.255', $this->port); 
@@ -537,17 +558,22 @@ function setRFLearning($id) {
      $twenties=array(0x20, 0x20, 0x20, 0x20, 0x20, 0x20);
 
      $message=$this->binaryToString($buf);
+
      $macAddress = '';
      if (is_integer(strpos($message, 'accf'))) {
       $macAddress = substr($message, strpos($message, 'accf'),12);
      }
      if (!$macAddress) {
+         DebMes("Unknown macAddress from $remote_ip: ".$message,'orvibo');
       return;
      }
 
      //echo date('H:i:s')." MAC: ".$macAddress."\n";
      $command=substr($message, 8,4);
      $rec=SQLSelectOne("SELECT * FROM orvibodevices WHERE MAC LIKE '".DBSafe($macAddress)."'");
+
+     DebMes("Command from ".$rec['TITLE']." : ".$command,'orvibo');
+
      if (!$rec['ID'] && $command!='7161') {
       //echo date('H:i:s')." Unknown device.";
       return;
@@ -580,7 +606,7 @@ function setRFLearning($id) {
       }
 
       //subscribe to it
-      //if (!$this->subscribed[$rec['MAC']] || ((time()-$this->subscribed[$rec['MAC']])>30)) {
+      if (!$this->subscribed[$rec['MAC']] || ((time()-$this->subscribed[$rec['MAC']])>30)) {
        $macReversed=array_reverse($this->HexStringToArray($rec['MAC']));
        $payload = $this->makePayload(array(0x68, 0x64, 0x00, 0x1e, 0x63, 0x6c)).$this->makePayload($this->HexStringToArray($rec['MAC'])).$this->makePayload($twenties).$this->makePayload($macReversed).$this->makePayload($twenties);
        //echo date('H:i:s')." Sending subscribe request: ".$this->binaryToString($payload)."\n";
@@ -595,7 +621,7 @@ function setRFLearning($id) {
        echo date('H:i:s')." Sending name request: ".$this->binaryToString($payload)."\n";
        socket_sendto($sock, $payload, strlen($payload), 0, $rec['IP'], $this->port); 
        */
-      //}
+      }
 
 
      } elseif ($command=='7274') { // We've queried the socket for the name, and we've got data coming back
@@ -626,6 +652,9 @@ function setRFLearning($id) {
           $params['VALUE']=$rec['VALUE_IR'];
           callMethod($rec['LINKED_OBJECT'].'.'.$rec['LINKED_METHOD_BUTTON'], $params);
         }
+        if ($rec['BUTTON_CODE']) {
+            eval($rec['BUTTON_CODE']);
+        }
      } elseif ($command=='7366') { // Something has changed our socket state externally
        //echo date('H:i:s')." Socket state changed from $macAddress\n";
        if ($rec['TYPE']==0) {
@@ -642,6 +671,7 @@ function setRFLearning($id) {
         $rec['VALUE_IR']=$code;
         $rec['UPDATED']=date('Y-m-d H:i:s');
         SQLUpdate('orvibodevices', $rec);
+           DebMes("Learning result: ".$code,'orvibo');
 
         if ($rec['LINKED_OBJECT'] && $rec['LINKED_PROPERTY']) {
          setGlobal($rec['LINKED_OBJECT'].'.'.$rec['LINKED_PROPERTY'], $rec['VALUE_IR'], array($this->name=>'0'));
@@ -743,6 +773,7 @@ orvibodevices - Devices
  orvibodevices: LINKED_PROPERTY_RF varchar(255) NOT NULL DEFAULT ''
  orvibodevices: LINKED_METHOD_RF varchar(255) NOT NULL DEFAULT ''
  orvibodevices: LINKED_METHOD_BUTTON varchar(255) NOT NULL DEFAULT ''
+ orvibodevices: BUTTON_CODE text
 
 
  orvibodevices: UPDATED datetime

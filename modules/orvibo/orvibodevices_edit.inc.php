@@ -54,25 +54,27 @@
    }
   //updating 'LINKED_OBJECT' (varchar)
    global $linked_object;
-   $rec['LINKED_OBJECT']=$linked_object;
+   $rec['LINKED_OBJECT']=$linked_object.'';
   //updating 'LINKED_PROPERTY' (varchar)
    global $linked_property;
-   $rec['LINKED_PROPERTY']=$linked_property;
+   $rec['LINKED_PROPERTY']=$linked_property.'';
   //updating 'LINKED_METHOD' (varchar)
    global $linked_method;
-   $rec['LINKED_METHOD']=$linked_method;
+   $rec['LINKED_METHOD']=$linked_method.'';
 
    global $linked_object_rf;
-   $rec['LINKED_OBJECT_RF']=$linked_object_rf;
+   $rec['LINKED_OBJECT_RF']=$linked_object_rf.'';
   //updating 'LINKED_PROPERTY' (varchar)
    global $linked_property_rf;
-   $rec['LINKED_PROPERTY_RF']=$linked_property_rf;
+   $rec['LINKED_PROPERTY_RF']=$linked_property_rf.'';
   //updating 'LINKED_METHOD' (varchar)
    global $linked_method_rf;
-   $rec['LINKED_METHOD_RF']=$linked_method_rf;
+   $rec['LINKED_METHOD_RF']=$linked_method_rf.'';
 
    global $linked_method_button;
-   $rec['LINKED_METHOD_BUTTON']=$linked_method_button;
+   $rec['LINKED_METHOD_BUTTON']=$linked_method_button.'';
+
+   $rec['BUTTON_CODE']=gr('button_code').'';
 
 
 

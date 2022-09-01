@@ -136,6 +136,7 @@
  <a href="#" class="btn btn-default" id='learnir_button' onClick="return learnIR();">Learn IR</a>
  [#if VALUE_IR!=""#]
  <a href="#" class="btn btn-default" id='sendir_button' onClick="return sendIR();">Test IR</a>
+ <div>callAPI('/api/module/orvibo','GET',array('id'=>[#ID#],'ir'=>'[#VALUE_IR#]'));</div>
  [#endif#]
  </div>
 </div>
@@ -145,7 +146,12 @@
  <label class="col-lg-3 control-label">
  Value RF:
  </label>
- <div class="col-lg-4"><span id='value_rf'>[#VALUE_RF#]</span> <a href="#" class="btn btn-default" id='learnrf_button' onClick="return learnRF();">Learn RF</a></div>
+ <div class="col-lg-4">
+  <span id='value_rf'>[#VALUE_RF#]</span> <a href="#" class="btn btn-default" id='learnrf_button' onClick="return learnRF();">Learn RF</a>
+  [#if VALUE_RF!=""#]
+  <div>callAPI('/api/module/orvibo','GET',array('id'=>[#ID#],'rf'=>'[#VALUE_RF#]'));</div>
+  [#endif#]
+ </div>
 </div>
 
 
@@ -197,6 +203,25 @@
 [#module name="linkedobject" object_field="linked_object" property_field="linked_property" method_field="linked_method"#]
 
 [#if TYPE="1"#]
+
+ <div class="form-group">
+  <label class="col-lg-3 control-label"[#if ERR_LINKED_METHOD_RF#] style="color:red;font-weight:bold"[#endif#]>
+   <#LANG_METHOD#> (Button pressed):
+  </label>
+  <div class="col-lg-4"><input type="text" class="form-control" name="linked_method_button" id='linked_method_button' value="[#LINKED_METHOD_BUTTON#]" ></div>
+ </div>
+
+ <div class="form-group">
+  <label class="col-lg-3 control-label">
+   Button pressed code:
+  </label>
+  [#module name="blockly_code" system_name="orvibobutton<#ID#>" code_field="button_code" action=""#]
+  <div class="col-lg-4"><textarea name="button_code" id="button_code" class="form-control">[#BUTTON_CODE#]</textarea></div>
+ </div>
+
+ [#module name="linkedobject" object_field="linked_object_rf" property_field="linked_property_rf" method_field="linked_method_rf"#]
+
+
 <!-- LINKED_OBJECT (varchar) -->
 <div class="form-group">
  <label class="col-lg-3 control-label"[#if ERR_LINKED_OBJECT_RF#] style="color:red;font-weight:bold"[#endif#]>
@@ -218,15 +243,6 @@
  </label>
  <div class="col-lg-4"><input type="text" class="form-control" name="linked_method_rf" id='linked_method_rf' value="[#LINKED_METHOD_RF#]" ></div>
 </div>
-
-<div class="form-group">
- <label class="col-lg-3 control-label"[#if ERR_LINKED_METHOD_RF#] style="color:red;font-weight:bold"[#endif#]>
- <#LANG_METHOD#> (Button pressed):
- </label>
- <div class="col-lg-4"><input type="text" class="form-control" name="linked_method_button" id='linked_method_button' value="[#LINKED_METHOD_BUTTON#]" ></div>
-</div>
-
-[#module name="linkedobject" object_field="linked_object_rf" property_field="linked_property_rf" method_field="linked_method_rf"#]
 
 [#endif TYPE#]
 

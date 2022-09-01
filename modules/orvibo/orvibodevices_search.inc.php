@@ -44,6 +44,10 @@
    colorizeArray($res);
    $total=count($res);
    for($i=0;$i<$total;$i++) {
+       $tm=strtotime($res[$i]['UPDATED']);
+       if ((time()-$tm)<=60) {
+           $res[$i]['IS_ONLINE']=1;
+       }
     // some action for every record if required
    }
    $out['RESULT']=$res;
